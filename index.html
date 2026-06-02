@@ -363,6 +363,10 @@
 
     auth.onAuthStateChanged(async (user) => {
       if (user) {
+        if (!window.location.pathname.includes("shopping-cart.html")) {
+            window.location.href = "shopping-cart.html";
+        }
+/* v1
         authPanel.style.display = "none";
         profilePanel.style.display = "block";
 
@@ -377,6 +381,7 @@
         document.getElementById("showUid").textContent = user.uid;
         document.getElementById("userAvatar").src =
           user.photoURL || "https://ui-avatars.com/api/?name=" + encodeURIComponent(username);
+*/  
       } else {
         authPanel.style.display = "block";
         profilePanel.style.display = "none";
