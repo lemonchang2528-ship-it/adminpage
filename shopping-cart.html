@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Shopping Cart System</title>
+  <style>
+    * { box-sizing: border-box; font-family: "Segoe UI", Tahoma, sans-serif; }
+    body {
+      margin: 0;
+      background: #f5f6fb;
+      color: #222;
+    }
+    header {
+      background: linear-gradient(135deg, #6d5dfc, #9b5dfc);
+      color: white;
+      padding: 22px;
+      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      box-shadow: 0 6px 18px rgba(0,0,0,.15);
+    }
+    header h1 { margin: 0; font-size: 28px; }
+    header p { margin: 6px 0 0; opacity: .9; }
+    .wrap {
+      max-width: 1150px;
+      margin: 28px auto;
+      padding: 0 16px;
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: 22px;
+    }
+    .products {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+      gap: 18px;
+    }
+    .card, .cart {
+      background: white;
+      border-radius: 18px;
+      box-shadow: 0 8px 24px rgba(0,0,0,.08);
+    }
+    .card {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .pic {
+      height: 135px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #eee, #ddd);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 46px;
+    }
+    .name {
+      font-weight: 800;
+      font-size: 17px;
+      min-height: 44px;
+    }
+    .desc {
+      color: #666;
+      font-size: 13px;
+      line-height: 1.35;
+      min-height: 36px;
+    }
+    .price {
+      color: #6d5dfc;
+      font-weight: 900;
+      font-size: 20px;
+    }
+    button {
+      border: none;
+      cursor: pointer;
+      border-radius: 12px;
+      font-weight: 800;
+      transition: .15s;
+    }
+    button:hover { transform: translateY(-1px); filter: brightness(.97); }
+    .add {
+      padding: 12px;
+      background: #6d5dfc;
+      color: white;
+      width: 100%;
+    }
+    .cart {
+      padding: 18px;
+      position: sticky;
+      top: 105px;
+      align-self: start;
+    }
+    .cart h2 {
+      margin: 0 0 14px;
+      color: #3b2fbf;
+    }
+    .cart-item {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      padding: 12px 0;
+      border-bottom: 1px solid #eee;
+    }
+    .cart-item:last-child { border-bottom: none; }
+    .cart-name { font-weight: 800; }
+    .cart-price { color: #666; font-size: 13px; margin-top: 3px; }
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin-top: 8px;
+    }
+    .qty-btn {
+      width: 29px;
+      height: 29px;
+      background: #eee;
+      color: #333;
+    }
+    .qty {
+      min-width: 22px;
+      text-align: center;
+      font-weight: 800;
+    }
+    .remove {
+      background: #ffe9e9;
+      color: #c92a2a;
+      padding: 7px 9px;
+      font-size: 12px;
+    }
+    .summary {
+      background: #f6f5ff;
+      border-radius: 14px;
+      padding: 14px;
+      margin-top: 14px;
+    }
+    .row {
+      display: flex;
+      justify-content: space-between;
+      margin: 8px 0;
+    }
+    .total {
+      font-size: 22px;
+      font-weight: 900;
+      color: #3b2fbf;
+      border-top: 1px solid #ddd;
+      padding-top: 10px;
+      margin-top: 10px;
+    }
+    .checkout {
+      width: 100%;
+      padding: 13px;
+      margin-top: 14px;
+      color: white;
+      background: #111827;
+      font-size: 16px;
+    }
+    .clear {
+      width: 100%;
+      padding: 11px;
+      margin-top: 9px;
+      color: #b42318;
+      background: #fff0f0;
+    }
+    .empty {
+      color: #777;
+      text-align: center;
+      padding: 25px 0;
+    }
+    .toast {
+      position: fixed;
+      bottom: 22px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #111827;
+      color: white;
+      padding: 12px 18px;
+      border-radius: 999px;
+      display: none;
+      z-index: 99;
+      box-shadow: 0 8px 24px rgba(0,0,0,.25);
+    }
+    @media (max-width: 850px) {
+      .wrap { grid-template-columns: 1fr; }
+      .cart { position: static; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>ระบบตะกร้าสินค้า</h1>
+    <p>เพิ่มสินค้า แก้ไขจำนวน ลบสินค้า และคำนวณยอดรวมอัตโนมัติ</p>
+  </header>
+
+  <main class="wrap">
+    <section>
+      <div class="products" id="productList"></div>
+    </section>
+
+    <aside class="cart">
+      <h2>🛒 ตะกร้าของฉัน</h2>
+      <div id="cartItems"></div>
+
+      <div class="summary">
+        <div class="row">
+          <span>จำนวนสินค้า</span>
+          <b><span id="totalQty">0</span> ชิ้น</b>
+        </div>
+        <div class="row">
+          <span>ค่าสินค้า</span>
+          <b>฿<span id="subtotal">0</span></b>
+        </div>
+        <div class="row">
+          <span>ค่าส่ง</span>
+          <b>฿<span id="shipping">0</span></b>
+        </div>
+        <div class="row total">
+          <span>รวมทั้งหมด</span>
+          <span>฿<span id="grandTotal">0</span></span>
+        </div>
+      </div>
+
+      <button class="checkout" onclick="checkout()">สั่งซื้อสินค้า</button>
+      <button class="clear" onclick="clearCart()">ล้างตะกร้า</button>
+    </aside>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const products = [
+      {
+        id: 1,
+        name: "เสื้อเด็กมือสอง",
+        desc: "สภาพดี ใส่สบาย เหมาะสำหรับเด็กเล็ก",
+        price: 30,
+        icon: "👕"
+      },
+      {
+        id: 2,
+        name: "หนังสือนิทานเด็ก",
+        desc: "ภาพสี อ่านง่าย เสริมจินตนาการ",
+        price: 45,
+        icon: "📚"
+      },
+      {
+        id: 3,
+        name: "คีย์บอร์ดมือสอง",
+        desc: "ใช้งานได้ดี เหมาะกับคอมพิวเตอร์ทั่วไป",
+        price: 120,
+        icon: "⌨️"
+      },
+      {
+        id: 4,
+        name: "เมาส์คอมพิวเตอร์",
+        desc: "ขนาดพอดีมือ ใช้งานง่าย",
+        price: 80,
+        icon: "🖱️"
+      },
+      {
+        id: 5,
+        name: "รองเท้าเด็ก",
+        desc: "น่ารัก น้ำหนักเบา สำหรับเด็กเล็ก",
+        price: 50,
+        icon: "👟"
+      },
+      {
+        id: 6,
+        name: "กระเป๋าผ้า",
+        desc: "ใช้ซ้ำได้ เหมาะกับใส่ของทั่วไป",
+        price: 35,
+        icon: "🛍️"
+      }
+    ];
+
+    let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+    function saveCart() {
+      localStorage.setItem("cart", JSON.stringify(cart));
+    }
+
+    function formatMoney(number) {
+      return number.toLocaleString("th-TH");
+    }
+
+    function renderProducts() {
+      const productList = document.getElementById("productList");
+      productList.innerHTML = products.map(product => `
+        <div class="card">
+          <div class="pic">${product.icon}</div>
+          <div class="name">${product.name}</div>
+          <div class="desc">${product.desc}</div>
+          <div class="price">฿${formatMoney(product.price)}</div>
+          <button class="add" onclick="addToCart(${product.id})">เพิ่มลงตะกร้า</button>
+        </div>
+      `).join("");
+    }
+
+    function renderCart() {
+      const cartItems = document.getElementById("cartItems");
+
+      if (cart.length === 0) {
+        cartItems.innerHTML = `<div class="empty">ยังไม่มีสินค้าในตะกร้า</div>`;
+      } else {
+        cartItems.innerHTML = cart.map(item => `
+          <div class="cart-item">
+            <div>
+              <div class="cart-name">${item.name}</div>
+              <div class="cart-price">฿${formatMoney(item.price)} x ${item.qty}</div>
+              <div class="controls">
+                <button class="qty-btn" onclick="decreaseQty(${item.id})">-</button>
+                <span class="qty">${item.qty}</span>
+                <button class="qty-btn" onclick="increaseQty(${item.id})">+</button>
+              </div>
+            </div>
+            <div>
+              <button class="remove" onclick="removeItem(${item.id})">ลบ</button>
+            </div>
+          </div>
+        `).join("");
+      }
+
+      const totalQty = cart.reduce((sum, item) => sum + item.qty, 0);
+      const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+      const shipping = subtotal === 0 ? 0 : subtotal >= 300 ? 0 : 40;
+      const grandTotal = subtotal + shipping;
+
+      document.getElementById("totalQty").textContent = totalQty;
+      document.getElementById("subtotal").textContent = formatMoney(subtotal);
+      document.getElementById("shipping").textContent = formatMoney(shipping);
+      document.getElementById("grandTotal").textContent = formatMoney(grandTotal);
+
+      saveCart();
+    }
+
+    function addToCart(productId) {
+      const product = products.find(p => p.id === productId);
+      const existing = cart.find(item => item.id === productId);
+
+      if (existing) {
+        existing.qty += 1;
+      } else {
+        cart.push({ ...product, qty: 1 });
+      }
+
+      renderCart();
+      showToast("เพิ่มสินค้าในตะกร้าแล้ว");
+    }
+
+    function increaseQty(productId) {
+      const item = cart.find(item => item.id === productId);
+      if (item) item.qty += 1;
+      renderCart();
+    }
+
+    function decreaseQty(productId) {
+      const item = cart.find(item => item.id === productId);
+      if (!item) return;
+
+      item.qty -= 1;
+      if (item.qty <= 0) {
+        cart = cart.filter(item => item.id !== productId);
+      }
+
+      renderCart();
+    }
+
+    function removeItem(productId) {
+      cart = cart.filter(item => item.id !== productId);
+      renderCart();
+      showToast("ลบสินค้าออกจากตะกร้าแล้ว");
+    }
+
+    function clearCart() {
+      if (cart.length === 0) return;
+      if (confirm("ต้องการล้างตะกร้าทั้งหมดใช่ไหม?")) {
+        cart = [];
+        renderCart();
+        showToast("ล้างตะกร้าเรียบร้อย");
+      }
+    }
+
+    function checkout() {
+      if (cart.length === 0) {
+        alert("ยังไม่มีสินค้าในตะกร้า");
+        return;
+      }
+
+      const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+      const shipping = subtotal >= 300 ? 0 : 40;
+      const grandTotal = subtotal + shipping;
+
+      const orderText = cart.map(item =>
+        `- ${item.name} x ${item.qty} = ฿${formatMoney(item.price * item.qty)}`
+      ).join("\n");
+
+      alert(
+        "สรุปรายการสั่งซื้อ\n\n" +
+        orderText +
+        "\n\nค่าสินค้า: ฿" + formatMoney(subtotal) +
+        "\nค่าส่ง: ฿" + formatMoney(shipping) +
+        "\nรวมทั้งหมด: ฿" + formatMoney(grandTotal)
+      );
+    }
+
+    function showToast(text) {
+      const toast = document.getElementById("toast");
+      toast.textContent = text;
+      toast.style.display = "block";
+      setTimeout(() => {
+        toast.style.display = "none";
+      }, 1600);
+    }
+
+    renderProducts();
+    renderCart();
+  </script>
+</body>
+</html>
