@@ -192,7 +192,7 @@
     <h1>ระบบตะกร้าสินค้า</h1>
     <p>เพิ่มสินค้า แก้ไขจำนวน ลบสินค้า และคำนวณยอดรวมอัตโนมัติ</p>
 
-<! User Profile Firebase >
+<! User Profile Firebase -->
   <div id="userBar" style="margin-top:12px;">
   👤 ผู้ใช้: <b id="currentUserName">กำลังตรวจสอบ...</b>
   <button onclick="logout()" style="margin-left:10px; padding:8px 14px; border-radius:10px;">
@@ -237,7 +237,7 @@
 
   <div class="toast" id="toast"></div>
 
-<! Firebase Login setting >
+<! Firebase Login setting -->
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
@@ -460,6 +460,9 @@
   }
 
   document.getElementById("currentUserName").textContent = username;
+
+  renderProducts();
+  renderCart();
 });
 
 async function logout() {
@@ -468,8 +471,7 @@ async function logout() {
 }
 
     
-    renderProducts();
-    renderCart();
+
   </script>
 </body>
 </html>
