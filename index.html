@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login System - Email & Google</title>
+  <style>
+    * { box-sizing: border-box; font-family: "Segoe UI", Tahoma, sans-serif; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at top, #6d5dfc, #1d1b4c 55%, #111);
+      color: #222;
+    }
+    .container {
+      width: 100%;
+      max-width: 420px;
+      background: rgba(255,255,255,0.96);
+      border-radius: 22px;
+      padding: 28px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.35);
+    }
+    h1 {
+      text-align: center;
+      margin: 0 0 8px;
+      color: #3b2fbf;
+      font-size: 28px;
+    }
+    .subtitle {
+      text-align: center;
+      margin-bottom: 22px;
+      color: #666;
+      font-size: 14px;
+    }
+    .tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      background: #eee;
+      border-radius: 14px;
+      padding: 5px;
+      margin-bottom: 18px;
+    }
+    .tab {
+      border: none;
+      padding: 11px;
+      border-radius: 11px;
+      cursor: pointer;
+      font-weight: 700;
+      background: transparent;
+      color: #555;
+    }
+    .tab.active {
+      background: #6d5dfc;
+      color: white;
+      box-shadow: 0 5px 12px rgba(109,93,252,.3);
+    }
+    .form { display: none; }
+    .form.active { display: block; }
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      color: #555;
+      margin: 12px 0 6px;
+    }
+    input {
+      width: 100%;
+      padding: 13px 14px;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      outline: none;
+      font-size: 15px;
+    }
+    input:focus {
+      border-color: #6d5dfc;
+      box-shadow: 0 0 0 3px rgba(109,93,252,.15);
+    }
+    button.main {
+      width: 100%;
+      margin-top: 16px;
+      border: none;
+      padding: 13px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #6d5dfc, #9b5dfc);
+      color: white;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    button.main:hover { filter: brightness(.96); }
+    .google {
+      width: 100%;
+      margin-top: 12px;
+      border: 1px solid #ddd;
+      padding: 12px;
+      border-radius: 12px;
+      background: white;
+      color: #333;
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 18px 0 10px;
+      color: #999;
+      font-size: 13px;
+    }
+    .divider::before, .divider::after {
+      content: "";
+      height: 1px;
+      background: #ddd;
+      flex: 1;
+    }
+    .message {
+      margin-top: 14px;
+      padding: 11px;
+      border-radius: 12px;
+      font-size: 14px;
+      display: none;
+      line-height: 1.4;
+    }
+    .message.ok {
+      display: block;
+      background: #e9f9ef;
+      color: #16703a;
+      border: 1px solid #bce8c9;
+    }
+    .message.err {
+      display: block;
+      background: #fff0f0;
+      color: #b42318;
+      border: 1px solid #ffc7c7;
+    }
+    .profile {
+      display: none;
+      text-align: center;
+    }
+    .avatar {
+      width: 86px;
+      height: 86px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 4px solid #eee;
+      margin: 8px auto 12px;
+      display: block;
+      background: #eee;
+    }
+    .userbox {
+      background: #f6f5ff;
+      border-radius: 16px;
+      padding: 16px;
+      margin-top: 12px;
+      text-align: left;
+      overflow-wrap: anywhere;
+    }
+    .logout {
+      background: #222 !important;
+      margin-top: 18px !important;
+    }
+    .note {
+      margin-top: 18px;
+      font-size: 12px;
+      color: #777;
+      line-height: 1.45;
+      background: #fafafa;
+      border-radius: 12px;
+      padding: 12px;
+    }
+    code { color: #3b2fbf; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="authPanel">
+      <h1>เข้าสู่ระบบ</h1>
+      <div class="subtitle">สมัครสมาชิก / Login ด้วย Email หรือ Google</div>
+
+      <div class="tabs">
+        <button class="tab active" id="loginTab">Login</button>
+        <button class="tab" id="registerTab">Register</button>
+      </div>
+
+      <div id="loginForm" class="form active">
+        <label>Email / Username</label>
+        <input type="email" id="loginEmail" placeholder="your@email.com" autocomplete="email"/>
+        <label>Password</label>
+        <input type="password" id="loginPassword" placeholder="รหัสผ่าน" autocomplete="current-password"/>
+        <button class="main" id="loginBtn">Login</button>
+      </div>
+
+      <div id="registerForm" class="form">
+        <label>Username</label>
+        <input type="text" id="registerUsername" placeholder="เช่น wattd_user"/>
+        <label>Email</label>
+        <input type="email" id="registerEmail" placeholder="your@email.com" autocomplete="email"/>
+        <label>Password</label>
+        <input type="password" id="registerPassword" placeholder="อย่างน้อย 6 ตัวอักษร" autocomplete="new-password"/>
+        <button class="main" id="registerBtn">Register</button>
+      </div>
+
+      <div class="divider">หรือ</div>
+      <button class="google" id="googleBtn">🔵 Login ด้วย Google</button>
+
+      <div id="message" class="message"></div>
+
+      <div class="note">
+        ก่อนอัปขึ้น GitHub Pages ให้เปลี่ยนค่า <code>firebaseConfig</code> ในไฟล์นี้เป็นค่าจาก Firebase Project ของคุณ และเปิดใช้งาน Authentication แบบ Email/Password + Google
+      </div>
+    </div>
+
+    <div id="profilePanel" class="profile">
+      <h1>ยินดีต้อนรับ</h1>
+      <img id="userAvatar" class="avatar" alt="Profile"/>
+      <div class="userbox">
+        <p><b>Username:</b> <span id="showUsername">-</span></p>
+        <p><b>Email:</b> <span id="showEmail">-</span></p>
+        <p><b>UID:</b> <span id="showUid">-</span></p>
+      </div>
+      <button class="main logout" id="logoutBtn">Logout</button>
+    </div>
+  </div>
+
+  <!-- Firebase SDK แบบ compat ใช้ง่ายในไฟล์เดียว -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+
+  <script>
+    /**************************************************************
+     * 1) เปลี่ยนค่า firebaseConfig ตรงนี้เป็นของโปรเจกต์คุณ
+     * Firebase Console > Project settings > General > Your apps
+     **************************************************************/
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    const googleProvider = new firebase.auth.GoogleAuthProvider();
+
+    const authPanel = document.getElementById("authPanel");
+    const profilePanel = document.getElementById("profilePanel");
+    const message = document.getElementById("message");
+
+    const loginTab = document.getElementById("loginTab");
+    const registerTab = document.getElementById("registerTab");
+    const loginForm = document.getElementById("loginForm");
+    const registerForm = document.getElementById("registerForm");
+
+    loginTab.addEventListener("click", () => switchTab("login"));
+    registerTab.addEventListener("click", () => switchTab("register"));
+
+    function switchTab(mode) {
+      clearMessage();
+      loginTab.classList.toggle("active", mode === "login");
+      registerTab.classList.toggle("active", mode === "register");
+      loginForm.classList.toggle("active", mode === "login");
+      registerForm.classList.toggle("active", mode === "register");
+    }
+
+    function showMessage(text, type = "ok") {
+      message.textContent = text;
+      message.className = "message " + type;
+    }
+
+    function clearMessage() {
+      message.textContent = "";
+      message.className = "message";
+    }
+
+    function friendlyError(error) {
+      const code = error && error.code ? error.code : "";
+      const map = {
+        "auth/invalid-email": "รูปแบบอีเมลไม่ถูกต้อง",
+        "auth/missing-password": "กรุณากรอกรหัสผ่าน",
+        "auth/weak-password": "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร",
+        "auth/email-already-in-use": "อีเมลนี้ถูกใช้งานแล้ว",
+        "auth/user-not-found": "ไม่พบบัญชีผู้ใช้นี้",
+        "auth/wrong-password": "รหัสผ่านไม่ถูกต้อง",
+        "auth/invalid-credential": "อีเมลหรือรหัสผ่านไม่ถูกต้อง",
+        "auth/popup-closed-by-user": "คุณปิดหน้าต่าง Google Login ก่อนทำรายการเสร็จ",
+        "auth/unauthorized-domain": "Domain นี้ยังไม่ได้รับอนุญาตใน Firebase Authentication"
+      };
+      return map[code] || (error.message || "เกิดข้อผิดพลาด");
+    }
+
+    document.getElementById("registerBtn").addEventListener("click", async () => {
+      clearMessage();
+      const username = document.getElementById("registerUsername").value.trim();
+      const email = document.getElementById("registerEmail").value.trim();
+      const password = document.getElementById("registerPassword").value;
+
+      if (!username) return showMessage("กรุณากรอก Username", "err");
+
+      try {
+        const result = await auth.createUserWithEmailAndPassword(email, password);
+        await result.user.updateProfile({ displayName: username });
+
+        await db.collection("users").doc(result.user.uid).set({
+          username,
+          email,
+          provider: "email",
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        showMessage("สมัครสมาชิกสำเร็จ", "ok");
+      } catch (error) {
+        showMessage(friendlyError(error), "err");
+      }
+    });
+
+    document.getElementById("loginBtn").addEventListener("click", async () => {
+      clearMessage();
+      const email = document.getElementById("loginEmail").value.trim();
+      const password = document.getElementById("loginPassword").value;
+
+      try {
+        await auth.signInWithEmailAndPassword(email, password);
+      } catch (error) {
+        showMessage(friendlyError(error), "err");
+      }
+    });
+
+    document.getElementById("googleBtn").addEventListener("click", async () => {
+      clearMessage();
+      try {
+        const result = await auth.signInWithPopup(googleProvider);
+        const user = result.user;
+
+        const ref = db.collection("users").doc(user.uid);
+        const doc = await ref.get();
+
+        if (!doc.exists) {
+          await ref.set({
+            username: user.displayName || "Google User",
+            email: user.email,
+            photoURL: user.photoURL || "",
+            provider: "google",
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+        }
+      } catch (error) {
+        showMessage(friendlyError(error), "err");
+      }
+    });
+
+    document.getElementById("logoutBtn").addEventListener("click", async () => {
+      await auth.signOut();
+    });
+
+    auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        authPanel.style.display = "none";
+        profilePanel.style.display = "block";
+
+        let username = user.displayName || "-";
+        try {
+          const doc = await db.collection("users").doc(user.uid).get();
+          if (doc.exists && doc.data().username) username = doc.data().username;
+        } catch (e) {}
+
+        document.getElementById("showUsername").textContent = username;
+        document.getElementById("showEmail").textContent = user.email || "-";
+        document.getElementById("showUid").textContent = user.uid;
+        document.getElementById("userAvatar").src =
+          user.photoURL || "https://ui-avatars.com/api/?name=" + encodeURIComponent(username);
+      } else {
+        authPanel.style.display = "block";
+        profilePanel.style.display = "none";
+      }
+    });
+  </script>
+</body>
+</html>
